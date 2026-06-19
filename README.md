@@ -33,7 +33,7 @@ A single-file QR code generator built with vanilla JavaScript and SVG. It allows
 1. Push the `index.html` file to your GitHub repository.
 2. Go to Settings > Pages.
 3. Select your branch (e.g., `main`) and click Save.
-4. Your live demo will be available at `[https://<your-username>.github.io/<repository-name>/](https://nezarati.github.io/qr-code-generator/index.html)`.
+4. Your live demo will be available at `https://nezarati.github.io/qr-code-generator/index.html`.
 
 ## 📄 License
 This project is open source and available under the MIT License.
