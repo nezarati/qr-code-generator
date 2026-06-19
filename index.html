@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator – Compact SVG with Custom Corners & Label</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1a1d23;
+            --panel-bg: #21252b;
+            --card-bg: #282c34;
+            --text: #e1e4e8;
+            --text-secondary: #a0a6b0;
+            --accent: #5c9ce6;
+            --accent-hover: #7ab4f7;
+            --border: #3a3f4b;
+            --input-bg: #1e2128;
+            --danger: #e0556a;
+            --success: #5cb878;
+            --warning: #e5b567;
+            --radius: 8px;
+            --radius-sm: 6px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .app-container {
+            display: flex;
+            gap: 24px;
+            max-width: 1300px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .controls-panel {
+            flex: 1 1 420px;
+            max-width: 480px;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .preview-panel {
+            flex: 1 1 500px;
+            max-width: 620px;
+            min-width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--accent);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .input-group input[type="text"],
+        .input-group input[type="url"],
+        .input-group input[type="number"],
+        .input-group select {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(92, 156, 230, 0.15);
+        }
+        .input-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%23a0a6b0'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        .input-group input[type="color"] {
+            width: 48px;
+            height: 38px;
+            padding: 4px;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+        }
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .input-row .input-group {
+            flex: 1;
+            min-width: 100px;
+        }
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .color-row label {
+            min-width: 70px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .toggle-row span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .toggle-switch {
+            position: relative;
+            width: 46px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #444;
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked+.toggle-slider {
+            background: var(--accent);
+        }
+        .toggle-switch input:checked+.toggle-slider::before {
+            transform: translateX(20px);
+        }
+
+        .range-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .range-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .range-group label .val {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .range-group input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+            cursor: pointer;
+        }
+        .range-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            font-family: inherit;
+            letter-spacing: 0.03em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border-color: var(--border);
+        }
+        .btn-outline:hover {
+            background: var(--card-bg);
+            border-color: #555;
+        }
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+            border-color: var(--success);
+        }
+        .btn-success:hover {
+            filter: brightness(1.15);
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+
+        .qr-preview-wrapper {
+            background: #fff;
+            border-radius: 16px;
+            padding: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 100%;
+            max-height: 60vh;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .qr-preview-wrapper svg {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+        }
+        .qr-placeholder {
+            color: #999;
+            font-size: 14px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 1000;
+            pointer-events: none;
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success {
+            background: var(--success);
+        }
+        .toast.error {
+            background: var(--danger);
+        }
+
+        .controls-panel::-webkit-scrollbar {
+            width: 5px;
+        }
+        .controls-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .controls-panel::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .app-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .preview-panel {
+                position: static;
+                max-height: none;
+                max-width: 100%;
+            }
+            .controls-panel {
+                max-height: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="panel controls-panel">
+            <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;color:#fff;">🎯 QR Generator</h2>
+            <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Compact SVG with custom corners & label</p>
+
+            <div class="section">
+                <div class="section-title">📝 Content</div>
+                <div class="input-group">
+                    <label>Text or URL</label>
+                    <input type="text" id="qrContent" value="https://example.com" placeholder="Enter text or URL...">
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">⚙️ QR Code Options</div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Error Correction</label>
+                        <select id="errorCorrection">
+                            <option value="L">L - Low (7%)</option>
+                            <option value="M" selected>M - Medium (15%)</option>
+                            <option value="Q">Q - Quartile (25%)</option>
+                            <option value="H">H - High (30%)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Module Size (px)</label>
+                        <input type="number" id="moduleSize" value="5" min="4" max="40" step="1">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Quiet Zone (modules)</label>
+                        <input type="number" id="quietZone" value="1" min="1" max="12" step="1">
+                    </div>
+                    <div class="input-group">
+                        <label>Scale for PNG</label>
+                        <input type="number" id="pngScale" value="4" min="1" max="10" step="1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🎨 Colors</div>
+                <div class="toggle-row">
+                    <span>Transparent Background</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="transparentBg">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="color-row">
+                    <label>Dark (data)</label>
+                    <input type="color" id="darkColor" value="#000000">
+                </div>
+                <div class="color-row">
+                    <label>Light (bg)</label>
+                    <input type="color" id="lightColor" value="#ffffff">
+                </div>
+                <div class="color-row">
+                    <label>Corners</label>
+                    <input type="color" id="patternColor" value="#000000">
+                    <span style="font-size:11px;color:var(--text-secondary);">Always independent</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🔷 Data Module Shape</div>
+                <div class="input-group">
+                    <label>Shape</label>
+                    <select id="moduleShape">
+                        <option value="square">Square</option>
+                        <option value="rounded">Rounded Square</option>
+                        <option value="circle">Circle</option>
+                        <option value="diamond">Diamond</option>
+                    </select>
+                </div>
+                <div class="range-group" id="moduleRadiusGroup" style="display:none;">
+                    <label>Corner Radius (%) <span class="val" id="moduleRadiusVal">30</span></label>
+                    <input type="range" id="moduleRadius" value="30" min="5" max="50" step="1">
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📐 3 Standard Corners</div>
+                <div class="input-group">
+                    <label>Outer Shape (7×7)</label>
+                    <select id="ppOuterShape">
+                        <option value="square" selected>Square</option>
+                        <option value="rounded">Rounded Square</option>
+                        <option value="circle">Circle</option>
+                        <option value="diamond">Diamond</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Inner Shape (5×5)</label>
+                    <select id="ppInnerShape">
+                        <option value="square" selected>Square</option>
+                        <option value="rounded">Rounded Square</option>
+                        <option value="circle">Circle</option>
+                        <option value="diamond">Diamond</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Center Shape (3×3)</label>
+                    <select id="ppCenterShape">
+                        <option value="square" selected>Square</option>
+                        <option value="rounded">Rounded Square</option>
+                        <option value="circle">Circle</option>
+                        <option value="diamond">Diamond</option>
+                    </select>
+                </div>
+                <div class="range-group" id="ppRadiusGroup" style="display:none;">
+                    <label>Corner Radius (when rounded) <span class="val" id="ppRadiusVal">25</span></label>
+                    <input type="range" id="ppRadius" value="25" min="5" max="50" step="1">
+                </div>
+            </div>
+
+            <div class="section" style="border-left: 3px solid var(--warning);">
+                <div class="section-title" style="color:var(--warning);">🔲 4th Corner (bottom‑right)</div>
+                <div class="toggle-row">
+                    <span><strong>Enable 4th corner</strong></span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="enableFourthPattern">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div id="fourthPatternOptions" style="opacity:0.5;pointer-events:none;">
+                    <div class="input-group">
+                        <label>Size (modules)</label>
+                        <select id="fourthPatternSize">
+                            <option value="7" selected>7×7 (full)</option>
+                            <option value="5">5×5 (compact)</option>
+                            <option value="9">9×9 (large)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Shape</label>
+                        <select id="fourthPatternStyle">
+                            <option value="rounded" selected>Rounded Square</option>
+                            <option value="square">Square</option>
+                            <option value="circle">Circle</option>
+                            <option value="diamond">Diamond</option>
+                            <option value="rings">Concentric Rings</option>
+                        </select>
+                    </div>
+                    <div class="color-row">
+                        <label>Color</label>
+                        <input type="color" id="fourthPatternColor" value="#000000">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🏷️ Label & Round Border</div>
+                <div class="toggle-row">
+                    <span><strong>Add label below QR</strong></span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="enableLabel">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div id="labelOptions" style="opacity:0.5;pointer-events:none;">
+                    <div class="input-group">
+                        <label>Label Text</label>
+                        <input type="text" id="labelText" value="SCAN ME" placeholder="Enter label text">
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Font Size (auto-fit)</label>
+                            <input type="number" id="labelFontSize" value="16" min="8" max="72">
+                        </div>
+                        <div class="input-group">
+                            <label>Font Family</label>
+                            <select id="labelFontFamily">
+                                <option value="Arial, sans-serif" selected>Arial</option>
+                                <option value="'IRANSans', 'Noto Sans Arabic', Tahoma, Arial, sans-serif">IRANSans (Persian)</option>
+                                <option value="'Courier New', monospace">Courier New</option>
+                                <option value="'Times New Roman', serif">Times New Roman</option>
+                                <option value="'Impact', sans-serif">Impact</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="range-group">
+                        <label>Border Margin (px) <span class="val" id="borderMarginVal">5</span></label>
+                        <input type="range" id="borderMargin" value="5" min="1" max="60" step="1">
+                    </div>
+                    <div class="range-group">
+                        <label>Border Roundness (px) <span class="val" id="borderRoundnessVal">10</span></label>
+                        <input type="range" id="borderRoundness" value="10" min="0" max="80" step="1">
+                    </div>
+                    <div class="color-row">
+                        <label>Border Color</label>
+                        <input type="color" id="borderColor" value="#000000">
+                    </div>
+                    <div class="color-row">
+                        <label>Label BG</label>
+                        <input type="color" id="labelBgColor" value="#000000">
+                    </div>
+                    <div class="color-row">
+                        <label>Label Text</label>
+                        <input type="color" id="labelTextColor" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel preview-panel">
+            <h3 style="font-size:16px;font-weight:600;color:#fff;">📱 Live Preview</h3>
+            <div class="qr-preview-wrapper" id="qrPreviewWrapper">
+                <span class="qr-placeholder" id="qrPlaceholder">QR code will appear here...</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary);text-align:center;" id="qrInfo">
+                Type something to generate
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btnDownloadSVG">⬇ Download SVG</button>
+                <button class="btn btn-outline" id="btnDownloadPNG">🖼 Download PNG</button>
+                <button class="btn btn-outline btn-sm" id="btnCopySVG">📋 Copy SVG</button>
+                <button class="btn btn-outline btn-sm" id="btnCopyPNG">📋 Copy PNG</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function() {
+            const qrContentEl = document.getElementById('qrContent');
+            const errorCorrectionEl = document.getElementById('errorCorrection');
+            const moduleSizeEl = document.getElementById('moduleSize');
+            const quietZoneEl = document.getElementById('quietZone');
+            const pngScaleEl = document.getElementById('pngScale');
+            const transparentBgEl = document.getElementById('transparentBg');
+            const darkColorEl = document.getElementById('darkColor');
+            const lightColorEl = document.getElementById('lightColor');
+            const patternColorEl = document.getElementById('patternColor');
+            const moduleShapeEl = document.getElementById('moduleShape');
+            const moduleRadiusEl = document.getElementById('moduleRadius');
+            const moduleRadiusGroup = document.getElementById('moduleRadiusGroup');
+            const moduleRadiusVal = document.getElementById('moduleRadiusVal');
+            const ppOuterShapeEl = document.getElementById('ppOuterShape');
+            const ppInnerShapeEl = document.getElementById('ppInnerShape');
+            const ppCenterShapeEl = document.getElementById('ppCenterShape');
+            const ppRadiusEl = document.getElementById('ppRadius');
+            const ppRadiusGroup = document.getElementById('ppRadiusGroup');
+            const ppRadiusVal = document.getElementById('ppRadiusVal');
+            const enableFourthPatternEl = document.getElementById('enableFourthPattern');
+            const fourthPatternSizeEl = document.getElementById('fourthPatternSize');
+            const fourthPatternStyleEl = document.getElementById('fourthPatternStyle');
+            const fourthPatternColorEl = document.getElementById('fourthPatternColor');
+            const fourthPatternOptions = document.getElementById('fourthPatternOptions');
+            const enableLabelEl = document.getElementById('enableLabel');
+            const labelOptions = document.getElementById('labelOptions');
+            const labelTextEl = document.getElementById('labelText');
+            const labelFontSizeEl = document.getElementById('labelFontSize');
+            const labelFontFamilyEl = document.getElementById('labelFontFamily');
+            const borderMarginEl = document.getElementById('borderMargin');
+            const borderMarginVal = document.getElementById('borderMarginVal');
+            const borderRoundnessEl = document.getElementById('borderRoundness');
+            const borderRoundnessVal = document.getElementById('borderRoundnessVal');
+            const borderColorEl = document.getElementById('borderColor');
+            const labelBgColorEl = document.getElementById('labelBgColor');
+            const labelTextColorEl = document.getElementById('labelTextColor');
+            const qrPreviewWrapper = document.getElementById('qrPreviewWrapper');
+            const qrPlaceholder = document.getElementById('qrPlaceholder');
+            const qrInfo = document.getElementById('qrInfo');
+            const toast = document.getElementById('toast');
+
+            let currentSvgElement = null;
+            let toastTimer;
+
+            function showToast(msg, type = '') {
+                clearTimeout(toastTimer);
+                toast.textContent = msg;
+                toast.className = 'toast ' + type + ' show';
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+            }
+
+            function updateUIVisibility() {
+                moduleRadiusGroup.style.display = moduleShapeEl.value === 'rounded' ? 'flex' : 'none';
+                moduleRadiusVal.textContent = moduleRadiusEl.value;
+
+                const anyRounded = [ppOuterShapeEl.value, ppInnerShapeEl.value, ppCenterShapeEl.value].includes('rounded');
+                ppRadiusGroup.style.display = anyRounded ? 'flex' : 'none';
+                ppRadiusVal.textContent = ppRadiusEl.value;
+
+                if (enableFourthPatternEl.checked) {
+                    fourthPatternOptions.style.opacity = '1';
+                    fourthPatternOptions.style.pointerEvents = 'auto';
+                } else {
+                    fourthPatternOptions.style.opacity = '0.5';
+                    fourthPatternOptions.style.pointerEvents = 'none';
+                }
+
+                if (enableLabelEl.checked) {
+                    labelOptions.style.opacity = '1';
+                    labelOptions.style.pointerEvents = 'auto';
+                } else {
+                    labelOptions.style.opacity = '0.5';
+                    labelOptions.style.pointerEvents = 'none';
+                }
+
+                borderMarginVal.textContent = borderMarginEl.value;
+                borderRoundnessVal.textContent = borderRoundnessEl.value;
+            }
+
+            function renderShape(svg, shapeType, cx, cy, size, fillColor, cornerRadiusPercent = 25) {
+                const half = size / 2;
+                const rx = (shapeType === 'rounded') ? (size * cornerRadiusPercent / 100) : 0;
+                if (shapeType === 'circle') {
+                    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    c.setAttribute('cx', cx);
+                    c.setAttribute('cy', cy);
+                    c.setAttribute('r', half);
+                    c.setAttribute('fill', fillColor);
+                    svg.appendChild(c);
+                } else if (shapeType === 'diamond') {
+                    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    poly.setAttribute('points', `${cx},${cy - half} ${cx + half},${cy} ${cx},${cy + half} ${cx - half},${cy}`);
+                    poly.setAttribute('fill', fillColor);
+                    svg.appendChild(poly);
+                } else {
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('x', cx - half);
+                    rect.setAttribute('y', cy - half);
+                    rect.setAttribute('width', size);
+                    rect.setAttribute('height', size);
+                    rect.setAttribute('fill', fillColor);
+                    if (shapeType === 'rounded' && rx > 0) {
+                        rect.setAttribute('rx', rx);
+                        rect.setAttribute('ry', rx);
+                    }
+                    svg.appendChild(rect);
+                }
+            }
+
+            function renderPositionPattern(svg, cx, cy, moduleSize, outerShape, innerShape, centerShape, radiusPercent, color, lightColor) {
+                renderShape(svg, outerShape, cx, cy, 7 * moduleSize, color, radiusPercent);
+                renderShape(svg, innerShape, cx, cy, 5 * moduleSize, lightColor, radiusPercent);
+                renderShape(svg, centerShape, cx, cy, 3 * moduleSize, color, radiusPercent);
+            }
+
+            function renderFourthPattern(svg, cx, cy, moduleSize, sizeModules, style, color, lightColor, radiusPercent) {
+                const totalSize = sizeModules * moduleSize;
+                const half = totalSize / 2;
+                if (style === 'rings') {
+                    const outerR = half;
+                    const midR = outerR * 0.7;
+                    const innerR = outerR * 0.35;
+                    const c1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    c1.setAttribute('cx', cx);
+                    c1.setAttribute('cy', cy);
+                    c1.setAttribute('r', outerR);
+                    c1.setAttribute('fill', 'none');
+                    c1.setAttribute('stroke', color);
+                    c1.setAttribute('stroke-width', moduleSize * 0.9);
+                    svg.appendChild(c1);
+                    const c2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    c2.setAttribute('cx', cx);
+                    c2.setAttribute('cy', cy);
+                    c2.setAttribute('r', midR);
+                    c2.setAttribute('fill', 'none');
+                    c2.setAttribute('stroke', lightColor);
+                    c2.setAttribute('stroke-width', moduleSize * 0.7);
+                    svg.appendChild(c2);
+                    const c3 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    c3.setAttribute('cx', cx);
+                    c3.setAttribute('cy', cy);
+                    c3.setAttribute('r', innerR);
+                    c3.setAttribute('fill', color);
+                    svg.appendChild(c3);
+                } else if (style === 'diamond') {
+                    const oH = half, iH = half * 0.65, cH = half * 0.3;
+                    const polyO = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    polyO.setAttribute('points', `${cx},${cy - oH} ${cx + oH},${cy} ${cx},${cy + oH} ${cx - oH},${cy}`);
+                    polyO.setAttribute('fill', color);
+                    svg.appendChild(polyO);
+                    const polyI = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    polyI.setAttribute('points', `${cx},${cy - iH} ${cx + iH},${cy} ${cx},${cy + iH} ${cx - iH},${cy}`);
+                    polyI.setAttribute('fill', lightColor);
+                    svg.appendChild(polyI);
+                    const polyC = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    polyC.setAttribute('points', `${cx},${cy - cH} ${cx + cH},${cy} ${cx},${cy + cH} ${cx - cH},${cy}`);
+                    polyC.setAttribute('fill', color);
+                    svg.appendChild(polyC);
+                } else if (style === 'circle') {
+                    const oR = half, iR = half * 0.65, cR = half * 0.3;
+                    const cO = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    cO.setAttribute('cx', cx);
+                    cO.setAttribute('cy', cy);
+                    cO.setAttribute('r', oR);
+                    cO.setAttribute('fill', color);
+                    svg.appendChild(cO);
+                    const cI = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    cI.setAttribute('cx', cx);
+                    cI.setAttribute('cy', cy);
+                    cI.setAttribute('r', iR);
+                    cI.setAttribute('fill', lightColor);
+                    svg.appendChild(cI);
+                    const cC = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    cC.setAttribute('cx', cx);
+                    cC.setAttribute('cy', cy);
+                    cC.setAttribute('r', cR);
+                    cC.setAttribute('fill', color);
+                    svg.appendChild(cC);
+                } else {
+                    const rx = (style === 'rounded') ? (totalSize * radiusPercent / 100) : 0;
+                    const outerR = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    outerR.setAttribute('x', cx - half);
+                    outerR.setAttribute('y', cy - half);
+                    outerR.setAttribute('width', totalSize);
+                    outerR.setAttribute('height', totalSize);
+                    outerR.setAttribute('fill', color);
+                    if (rx > 0) { outerR.setAttribute('rx', rx); outerR.setAttribute('ry', rx); }
+                    svg.appendChild(outerR);
+                    const iSize = totalSize * 0.65, iHalf = iSize / 2;
+                    const iRx = (style === 'rounded') ? (iSize * radiusPercent / 100) : 0;
+                    const innerR = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    innerR.setAttribute('x', cx - iHalf);
+                    innerR.setAttribute('y', cy - iHalf);
+                    innerR.setAttribute('width', iSize);
+                    innerR.setAttribute('height', iSize);
+                    innerR.setAttribute('fill', lightColor);
+                    if (iRx > 0) { innerR.setAttribute('rx', iRx); innerR.setAttribute('ry', iRx); }
+                    svg.appendChild(innerR);
+                    const cSize = totalSize * 0.3, cHalf = cSize / 2;
+                    const cRx = (style === 'rounded') ? (cSize * radiusPercent / 100) : 0;
+                    const centerR = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    centerR.setAttribute('x', cx - cHalf);
+                    centerR.setAttribute('y', cy - cHalf);
+                    centerR.setAttribute('width', cSize);
+                    centerR.setAttribute('height', cSize);
+                    centerR.setAttribute('fill', color);
+                    if (cRx > 0) { centerR.setAttribute('rx', cRx); centerR.setAttribute('ry', cRx); }
+                    svg.appendChild(centerR);
+                }
+            }
+
+            /**
+             * Measures the actual width of a text string using an SVG text element.
+             * Returns the optimal font size that fits within maxWidth, not exceeding initialFontSize.
+             */
+            function measureTextWidth(text, fontFamily, fontSize) {
+                // Create a temporary SVG element off-screen
+                const svgNS = 'http://www.w3.org/2000/svg';
+                const tempSvg = document.createElementNS(svgNS, 'svg');
+                tempSvg.setAttribute('width', '0');
+                tempSvg.setAttribute('height', '0');
+                tempSvg.style.position = 'absolute';
+                tempSvg.style.visibility = 'hidden';
+                const tempText = document.createElementNS(svgNS, 'text');
+                tempText.setAttribute('font-family', fontFamily);
+                tempText.setAttribute('font-size', fontSize);
+                tempText.setAttribute('font-weight', 'bold');
+                tempText.textContent = text;
+                tempSvg.appendChild(tempText);
+                document.body.appendChild(tempSvg);
+                const width = tempText.getComputedTextLength();
+                document.body.removeChild(tempSvg);
+                return width;
+            }
+
+            function calculateOptimalFontSize(text, fontFamily, maxWidth, initialFontSize) {
+                if (!text || text.length === 0) return initialFontSize;
+                // Start with initial font size (user's chosen size)
+                let lowSize = 8;
+                let highSize = initialFontSize;
+                let optimalSize = initialFontSize;
+
+                // If the text already fits at initial size, keep it as is.
+                const initialWidth = measureTextWidth(text, fontFamily, initialFontSize);
+                if (initialWidth <= maxWidth) {
+                    return initialFontSize;
+                }
+
+                // Binary search for the largest font size that fits
+                for (let i = 0; i < 15; i++) {
+                    const mid = (lowSize + highSize) / 2;
+                    const width = measureTextWidth(text, fontFamily, mid);
+                    if (width <= maxWidth) {
+                        optimalSize = mid;
+                        lowSize = mid;
+                    } else {
+                        highSize = mid;
+                    }
+                }
+                // Ensure a minimum of 8px
+                return Math.max(8, optimalSize);
+            }
+
+            function generateQRSVG() {
+                const content = qrContentEl.value.trim();
+                if (!content) {
+                    qrPreviewWrapper.innerHTML = '<span class="qr-placeholder">Please enter text or URL</span>';
+                    qrInfo.textContent = 'Type something to generate';
+                    currentSvgElement = null;
+                    return null;
+                }
+
+                const errorLevel = errorCorrectionEl.value;
+                const moduleSize = parseInt(moduleSizeEl.value) || 5;
+                const quietModules = parseInt(quietZoneEl.value) || 1;
+                const darkColor = darkColorEl.value;
+                const lightColor = lightColorEl.value;
+                const patternColor = patternColorEl.value;
+                const moduleShape = moduleShapeEl.value;
+                const moduleRadiusPercent = parseInt(moduleRadiusEl.value) || 30;
+                const ppOuter = ppOuterShapeEl.value;
+                const ppInner = ppInnerShapeEl.value;
+                const ppCenter = ppCenterShapeEl.value;
+                const ppRadiusPercent = parseInt(ppRadiusEl.value) || 25;
+                const enableFourth = enableFourthPatternEl.checked;
+                const fourthSize = parseInt(fourthPatternSizeEl.value) || 7;
+                const fourthStyle = fourthPatternStyleEl.value;
+                const fourthColor = fourthPatternColorEl.value;
+
+                const enableLabel = enableLabelEl.checked;
+                const labelText = labelTextEl.value || 'SCAN ME';
+                const labelFontSizeInput = parseInt(labelFontSizeEl.value) || 16;
+                const labelFontFamily = labelFontFamilyEl.value;
+                const borderMargin = parseInt(borderMarginEl.value) || 5;
+                const borderRoundness = parseInt(borderRoundnessEl.value) || 10;
+                const borderColor = borderColorEl.value;
+                const labelBgColor = labelBgColorEl.value;
+                const labelTextColor = labelTextColorEl.value;
+
+                const qr = qrcode(0, errorLevel);
+                qr.addData(content);
+                qr.make();
+                const moduleCount = qr.getModuleCount();
+
+                const qrPixelSize = moduleCount * moduleSize;
+                const quietPixels = quietModules * moduleSize;
+                const qrTotalSize = qrPixelSize + 2 * quietPixels;
+
+                const borderPadding = borderMargin;
+                const totalWidth = qrTotalSize + 2 * borderPadding;
+
+                // Calculate optimal font size based on actual text measurement
+                let actualLabelFontSize = labelFontSizeInput;
+                if (enableLabel && labelText.length > 0) {
+                    const maxTextWidth = totalWidth - 24; // 12px padding on each side
+                    actualLabelFontSize = calculateOptimalFontSize(labelText, labelFontFamily, maxTextWidth, labelFontSizeInput);
+                }
+
+                const labelHeight = enableLabel ? (actualLabelFontSize * 1.8) : 0;
+                const borderWidth = enableLabel ? Math.max(4, moduleSize * 0.8) : 0;
+                const totalHeight = qrTotalSize + 2 * borderPadding + labelHeight;
+
+                const svgNS = 'http://www.w3.org/2000/svg';
+                const svg = document.createElementNS(svgNS, 'svg');
+                svg.setAttribute('xmlns', svgNS);
+                svg.setAttribute('viewBox', `0 0 ${totalWidth} ${totalHeight}`);
+                svg.setAttribute('width', totalWidth);
+                svg.setAttribute('height', totalHeight);
+
+                const title = document.createElementNS(svgNS, 'title');
+                title.textContent = 'QR: ' + content.substring(0, 50);
+                svg.appendChild(title);
+
+                if (!transparentBgEl.checked) {
+                    const bg = document.createElementNS(svgNS, 'rect');
+                    bg.setAttribute('x', 0);
+                    bg.setAttribute('y', 0);
+                    bg.setAttribute('width', totalWidth);
+                    bg.setAttribute('height', totalHeight);
+                    bg.setAttribute('fill', lightColor);
+                    svg.appendChild(bg);
+                }
+
+                const qrOffsetX = borderPadding;
+                const qrOffsetY = borderPadding;
+
+                const ppSet = new Set();
+                [[0, 0], [0, moduleCount - 7], [moduleCount - 7, 0]].forEach(([r0, c0]) => {
+                    for (let r = r0; r < r0 + 7; r++)
+                        for (let c = c0; c < c0 + 7; c++) ppSet.add(`${r},${c}`);
+                });
+                const fourthSet = new Set();
+                if (enableFourth) {
+                    const fs = fourthSize;
+                    const r0 = moduleCount - fs;
+                    const c0 = moduleCount - fs;
+                    for (let r = r0; r < moduleCount; r++)
+                        for (let c = c0; c < moduleCount; c++) fourthSet.add(`${r},${c}`);
+                }
+                const skipSet = new Set([...ppSet, ...fourthSet]);
+
+                for (let row = 0; row < moduleCount; row++) {
+                    for (let col = 0; col < moduleCount; col++) {
+                        if (skipSet.has(`${row},${col}`)) continue;
+                        if (qr.isDark(row, col)) {
+                            const cx = qrOffsetX + quietPixels + col * moduleSize + moduleSize / 2;
+                            const cy = qrOffsetY + quietPixels + row * moduleSize + moduleSize / 2;
+                            renderShape(svg, moduleShape, cx, cy, moduleSize, darkColor, moduleRadiusPercent);
+                        }
+                    }
+                }
+
+                const ppCenters = [[0, 0], [0, moduleCount - 7], [moduleCount - 7, 0]];
+                ppCenters.forEach(([r0, c0]) => {
+                    const cx = qrOffsetX + quietPixels + c0 * moduleSize + 3.5 * moduleSize;
+                    const cy = qrOffsetY + quietPixels + r0 * moduleSize + 3.5 * moduleSize;
+                    renderPositionPattern(svg, cx, cy, moduleSize, ppOuter, ppInner, ppCenter, ppRadiusPercent, patternColor, lightColor);
+                });
+
+                if (enableFourth) {
+                    const fs = fourthSize;
+                    const cx = qrOffsetX + quietPixels + (moduleCount - fs / 2) * moduleSize;
+                    const cy = qrOffsetY + quietPixels + (moduleCount - fs / 2) * moduleSize;
+                    renderFourthPattern(svg, cx, cy, moduleSize, fs, fourthStyle, fourthColor, lightColor, ppRadiusPercent);
+                }
+
+                if (enableLabel) {
+                    const br = borderRoundness;
+                    const borderRect = document.createElementNS(svgNS, 'rect');
+                    borderRect.setAttribute('x', borderWidth / 2);
+                    borderRect.setAttribute('y', borderWidth / 2);
+                    borderRect.setAttribute('width', totalWidth - borderWidth);
+                    borderRect.setAttribute('height', totalHeight - borderWidth);
+                    borderRect.setAttribute('fill', 'none');
+                    borderRect.setAttribute('stroke', borderColor);
+                    borderRect.setAttribute('stroke-width', borderWidth);
+                    borderRect.setAttribute('rx', br);
+                    borderRect.setAttribute('ry', br);
+                    svg.appendChild(borderRect);
+
+                    const labelBarY = qrOffsetY + qrTotalSize + borderPadding;
+                    const labelBarHeight = totalHeight - labelBarY;
+                    const labelRect = document.createElementNS(svgNS, 'rect');
+                    labelRect.setAttribute('x', 0);
+                    labelRect.setAttribute('y', labelBarY);
+                    labelRect.setAttribute('width', totalWidth);
+                    labelRect.setAttribute('height', labelBarHeight);
+                    labelRect.setAttribute('fill', labelBgColor);
+                    svg.appendChild(labelRect);
+
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', totalWidth / 2);
+                    text.setAttribute('y', labelBarY + labelBarHeight / 2);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('dominant-baseline', 'central');
+                    text.setAttribute('font-family', labelFontFamily);
+                    text.setAttribute('font-size', actualLabelFontSize);
+                    text.setAttribute('font-weight', 'bold');
+                    text.setAttribute('fill', labelTextColor);
+                    text.textContent = labelText;
+                    svg.appendChild(text);
+                }
+
+                qrPreviewWrapper.innerHTML = '';
+                qrPreviewWrapper.appendChild(svg);
+                currentSvgElement = svg;
+                qrInfo.textContent = `Version ${Math.floor((moduleCount - 17) / 4) + 1} · ${moduleCount}×${moduleCount} · ${totalWidth}×${totalHeight}px` +
+                    (enableLabel && actualLabelFontSize !== labelFontSizeInput ? ` · label auto-fit: ${actualLabelFontSize}px` : '');
+                return svg;
+            }
+
+            function getDownloadFilename(extension) {
+                const labelEnabled = enableLabelEl.checked;
+                const rawLabel = labelTextEl.value.trim();
+                if (labelEnabled && rawLabel.length > 0) {
+                    const sanitized = rawLabel.replace(/[^a-zA-Z0-9\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\s_-]/g, '')
+                        .replace(/\s+/g, '_') || 'label';
+                    return sanitized + '.' + extension;
+                }
+                return 'qrcode.' + extension;
+            }
+
+            function getSVGString() {
+                if (!currentSvgElement) return null;
+                const clone = currentSvgElement.cloneNode(true);
+                clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                const serializer = new XMLSerializer();
+                return '<?xml version="1.0" encoding="UTF-8"?>\n' + serializer.serializeToString(clone);
+            }
+
+            function downloadSVG() {
+                const str = getSVGString();
+                if (!str) return showToast('Generate a QR code first!', 'error');
+                const blob = new Blob([str], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = getDownloadFilename('svg');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('SVG downloaded! ✅', 'success');
+            }
+
+            function svgToPngBlob(svgEl, scale) {
+                return new Promise((resolve, reject) => {
+                    const clone = svgEl.cloneNode(true);
+                    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                    const svgString = new XMLSerializer().serializeToString(clone);
+                    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const w = parseInt(svgEl.getAttribute('width')) || 300;
+                        const h = parseInt(svgEl.getAttribute('height')) || 300;
+                        canvas.width = w * scale;
+                        canvas.height = h * scale;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.scale(scale, scale);
+                        ctx.drawImage(img, 0, 0);
+                        URL.revokeObjectURL(url);
+                        canvas.toBlob(b => b ? resolve({ blob: b, canvas }) : reject(new Error('toBlob failed')), 'image/png');
+                    };
+                    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img load error')); };
+                    img.src = url;
+                });
+            }
+
+            async function downloadPNG() {
+                if (!currentSvgElement) return showToast('Generate a QR code first!', 'error');
+                try {
+                    const scale = parseInt(pngScaleEl.value) || 4;
+                    const { blob } = await svgToPngBlob(currentSvgElement, scale);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = getDownloadFilename('png');
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast('PNG downloaded! ✅', 'success');
+                } catch (e) {
+                    console.error(e);
+                    showToast('PNG generation failed', 'error');
+                }
+            }
+
+            function copySVG() {
+                const str = getSVGString();
+                if (!str) return showToast('Generate a QR code first!', 'error');
+                navigator.clipboard.writeText(str).then(() => showToast('SVG code copied! 📋', 'success')).catch(
+                    () => showToast('Copy failed', 'error'));
+            }
+
+            async function copyPNG() {
+                if (!currentSvgElement) return showToast('Generate a QR code first!', 'error');
+                try {
+                    const scale = parseInt(pngScaleEl.value) || 4;
+                    const { blob } = await svgToPngBlob(currentSvgElement, scale);
+                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                    showToast('PNG copied to clipboard! 📋', 'success');
+                } catch (e) {
+                    console.error(e);
+                    showToast('Copy PNG failed. Try downloading instead.', 'error');
+                }
+            }
+
+            const allInputs = [
+                qrContentEl, errorCorrectionEl, moduleSizeEl, quietZoneEl, pngScaleEl,
+                transparentBgEl, darkColorEl, lightColorEl, patternColorEl,
+                moduleShapeEl, moduleRadiusEl, ppOuterShapeEl, ppInnerShapeEl, ppCenterShapeEl,
+                ppRadiusEl, enableFourthPatternEl, fourthPatternSizeEl, fourthPatternStyleEl,
+                fourthPatternColorEl, enableLabelEl, labelTextEl, labelFontSizeEl,
+                labelFontFamilyEl, borderMarginEl, borderRoundnessEl, borderColorEl, labelBgColorEl, labelTextColorEl
+            ];
+            allInputs.forEach(el => {
+                el.addEventListener('input', () => { updateUIVisibility(); generateQRSVG(); });
+                el.addEventListener('change', () => { updateUIVisibility(); generateQRSVG(); });
+            });
+
+            document.getElementById('btnDownloadSVG').addEventListener('click', downloadSVG);
+            document.getElementById('btnDownloadPNG').addEventListener('click', downloadPNG);
+            document.getElementById('btnCopySVG').addEventListener('click', copySVG);
+            document.getElementById('btnCopyPNG').addEventListener('click', copyPNG);
+
+            updateUIVisibility();
+            generateQRSVG();
+        })();
+    </script>
+</body>
+</html>
